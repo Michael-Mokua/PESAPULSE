@@ -1,0 +1,16 @@
+<resources>
+    <string name="app_name">PesaPulse</string>
+    <string name="dashboard_title">Dashibodi</string>
+    <string name="transactions_title">Miamala</string>
+    <string name="reports_title">Ripoti</string>
+    <string name="settings_title">Mipangilio</string>
+    
+    <string name="current_balance">Salio la Sasa</string>
+    <string name="monthly_spending">Matumizi ya Mwezi</string>
+    <string name="monthly_income">Mapato ya Mwezi</string>
+    
+    <string name="recent_transactions">Miamala ya Hivi Karibuni</string>
+    <string name="view_all">Ona Zote</string>
+    
+    <string name="permission_rationale">PesaPulse inahitaji ruhusa za SMS ili kufuatilia miamala yako ya M-Pesa na kutoa ushauri wa kifedha.</string>
+</resources>
