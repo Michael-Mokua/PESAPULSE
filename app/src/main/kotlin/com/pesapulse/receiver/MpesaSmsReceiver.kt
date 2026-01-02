@@ -29,10 +29,7 @@ class MpesaSmsReceiver : BroadcastReceiver() {
     }
 
     private fun saveTransaction(context: Context, transaction: com.pesapulse.data.model.TransactionEntity) {
-        val database = Room.databaseBuilder(
-            context.applicationContext,
-            AppDatabase::class.java, "pesapulse-db"
-        ).build()
+        val database = AppDatabase.getDatabase(context)
 
         CoroutineScope(Dispatchers.IO).launch {
             database.transactionDao().insertTransaction(transaction)

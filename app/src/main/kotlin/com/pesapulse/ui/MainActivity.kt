@@ -37,10 +37,7 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        database = Room.databaseBuilder(
-            applicationContext,
-            AppDatabase::class.java, "pesapulse-db"
-        ).build()
+        database = AppDatabase.getDatabase(this)
 
         setupNavigation()
         checkPermissions()
