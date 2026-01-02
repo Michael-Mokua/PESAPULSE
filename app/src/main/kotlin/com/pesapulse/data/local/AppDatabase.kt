@@ -33,7 +33,7 @@ interface GoalDao {
     suspend fun insertGoal(goal: GoalEntity)
 }
 
-@Database(entities = [TransactionEntity::class, GoalEntity::class, CategoryEntity::class], version = 1)
+@Database(entities = [TransactionEntity::class, GoalEntity::class, CategoryEntity::class], version = 1, exportSchema = false)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun transactionDao(): TransactionDao
     abstract fun goalDao(): GoalDao
