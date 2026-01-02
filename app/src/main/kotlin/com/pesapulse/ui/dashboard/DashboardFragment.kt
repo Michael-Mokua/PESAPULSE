@@ -82,10 +82,10 @@ class DashboardFragment : Fragment() {
         dataSet.valueTextColor = Color.BLACK
         dataSet.valueTextSize = 12f
 
-        binding.spending_chart.data = PieData(dataSet)
-        binding.spending_chart.centerText = "Expenses"
-        binding.spending_chart.description.isEnabled = false
-        binding.spending_chart.invalidate()
+        binding.spendingChart.data = PieData(dataSet)
+        binding.spendingChart.centerText = "Expenses"
+        binding.spendingChart.description.isEnabled = false
+        binding.spendingChart.invalidate()
     }
 
     override fun onDestroyView() {
