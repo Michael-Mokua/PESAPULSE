@@ -17,6 +17,10 @@ import com.pesapulse.ui.transactions.TransactionAdapter
 import com.pesapulse.ui.viewmodel.TransactionViewModel
 import com.pesapulse.ui.viewmodel.ViewModelFactory
 import com.pesapulse.util.FinancialAdvisor
+import com.pesapulse.util.HistoricalSmsImporter
+import androidx.lifecycle.lifecycleScope
+import android.widget.Toast
+import kotlinx.coroutines.launch
 
 class DashboardFragment : Fragment() {
     private var _binding: FragmentDashboardBinding? = null
@@ -37,55 +41,105 @@ class DashboardFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         binding.rvRecentTransactions.adapter = adapter
-
         setupObservers()
+
+        binding.btnResync.setOnClickListener {
+            binding.btnResync.animate().rotationBy(360f).setDuration(1000).start()
+            importHistory()
+        }
+    }
+
+    private fun importHistory() {
+        val database = AppDatabase.getDatabase(requireContext())
+        viewLifecycleOwner.lifecycleScope.launch {
+            HistoricalSmsImporter.importLast6Months(requireContext(), database)
+            Toast.makeText(requireContext(), "Pulse Synced", Toast.LENGTH_SHORT).show()
+        }
     }
 
     private fun setupObservers() {
         viewModel.latestTransaction.observe(viewLifecycleOwner) { tx ->
             tx?.let {
-                binding.tvBalance.text = "KES ${String.format("%.2f", it.balance)}"
+                binding.tvBalance.text = "KES ${formatCurrency(it.balance)}"
+                binding.tvFulizaBal.text = "KES ${formatCurrency(it.fulizaBalance)}"
+                binding.tvFulizaLimit.text = "KES ${formatCurrency(it.fulizaLimit)}"
+                
+                // Calculate Pulse Score dynamically
+                val score = calculatePulseScore(it.balance, it.fulizaBalance)
+                binding.pulseGauge.setScore(score)
             }
         }
 
-        viewModel.monthlyIncome.observe(viewLifecycleOwner) { income ->
-            binding.tvIncome.text = "KES ${String.format("%.2f", income ?: 0.0)}"
-        }
-
-        viewModel.monthlyExpenses.observe(viewLifecycleOwner) { expense ->
-            binding.tvExpense.text = "KES ${String.format("%.2f", expense ?: 0.0)}"
-            updateAdvice()
-        }
-
         viewModel.allTransactions.observe(viewLifecycleOwner) { transactions ->
-            adapter.submitList(transactions.take(10))
-            setupChart(transactions)
+            adapter.submitList(transactions.take(15))
+            setupPredictionChart(transactions)
+            detectSubscriptions(transactions)
+            showFrequentContacts(transactions)
         }
     }
 
-    private fun updateAdvice() {
-        val balanceStr = binding.tvBalance.text.toString().replace("KES ", "").replace(",", "")
-        val balance = balanceStr.toDoubleOrNull() ?: 0.0
-        val income = viewModel.monthlyIncome.value ?: 0.0
-        val expense = viewModel.monthlyExpenses.value ?: 0.0
-        
-        binding.tvAdvice.text = FinancialAdvisor.getAdvice(balance, income, expense)
+    private fun formatCurrency(amount: java.math.BigDecimal): String {
+        val df = java.text.DecimalFormat("#,##0.00")
+        return df.format(amount)
     }
 
-    private fun setupChart(transactions: List<com.pesapulse.data.model.TransactionEntity>) {
-        val categories = FinancialAdvisor.categorizeSpending(transactions)
-        if (categories.isEmpty()) return
+    private fun showFrequentContacts(history: List<com.pesapulse.data.model.TransactionEntity>) {
+        val contacts = com.pesapulse.util.AiFinancialCore.getFrequentCounterparties(history)
+        binding.tvFrequentContacts.text = if (contacts.isEmpty()) "No frequent contacts yet."
+            else contacts.joinToString("\n") { (name, flow, count) -> 
+                "$name • $count tx • ${if (flow >= java.math.BigDecimal.ZERO) "+" else ""}${formatCurrency(flow)}"
+            }
+    }
 
-        val entries = categories.map { PieEntry(it.value.toFloat(), it.key) }
-        val dataSet = PieDataSet(entries, "Spending by Category")
-        dataSet.colors = listOf(Color.GREEN, Color.BLUE, Color.MAGENTA, Color.YELLOW, Color.CYAN)
-        dataSet.valueTextColor = Color.BLACK
-        dataSet.valueTextSize = 12f
+    private fun detectSubscriptions(history: List<com.pesapulse.data.model.TransactionEntity>) {
+        val subs = com.pesapulse.util.AiFinancialCore.detectSubscriptions(history)
+        binding.tvDetectedSubs.text = if (subs.isEmpty()) "No recurring subs found yet." 
+            else subs.joinToString(", ")
+    }
 
-        binding.spendingChart.data = PieData(dataSet)
-        binding.spendingChart.centerText = "Expenses"
-        binding.spendingChart.description.isEnabled = false
-        binding.spendingChart.invalidate()
+    private fun setupPredictionChart(history: List<com.pesapulse.data.model.TransactionEntity>) {
+        val predictions = com.pesapulse.util.AiFinancialCore.predictBalance(history)
+        if (predictions.isEmpty()) return
+
+        val entries = predictions.mapIndexed { index, pair -> 
+            com.github.mikephil.charting.data.Entry(index.toFloat(), pair.second.toFloat()) 
+        }
+// ... rest of setupPredictionChart logic is same, just needed the map update ...
+        val dataSet = com.github.mikephil.charting.data.LineDataSet(entries, "Predicted Balance").apply {
+            color = Color.parseColor("#00E5FF")
+            setDrawCircles(false)
+            lineWidth = 3f
+            mode = com.github.mikephil.charting.data.LineDataSet.Mode.CUBIC_BEZIER
+            setDrawFilled(true)
+            fillColor = Color.parseColor("#00E5FF")
+            fillAlpha = 50
+        }
+
+        binding.chartPrediction.apply {
+            data = com.github.mikephil.charting.data.LineData(dataSet)
+            description.isEnabled = false
+            legend.isEnabled = false
+            xAxis.isEnabled = false
+            axisRight.isEnabled = false
+            axisLeft.textColor = Color.WHITE
+            setTouchEnabled(false)
+            invalidate()
+        }
+    }
+
+    private fun calculatePulseScore(balance: java.math.BigDecimal, debt: java.math.BigDecimal): Int {
+        val net = balance.subtract(debt)
+        val ksh500 = java.math.BigDecimal("500")
+        val ksh2000 = java.math.BigDecimal("2000")
+        val ksh10000 = java.math.BigDecimal("10000")
+
+        return when {
+            net <= java.math.BigDecimal.ZERO -> 300
+            net < ksh500 -> 450
+            net < ksh2000 -> 600
+            net < ksh10000 -> 800
+            else -> 950
+        }
     }
 
     override fun onDestroyView() {

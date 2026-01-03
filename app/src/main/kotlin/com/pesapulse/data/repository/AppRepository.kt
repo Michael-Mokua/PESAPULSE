@@ -14,8 +14,8 @@ class AppRepository(
     val allGoals: Flow<List<GoalEntity>> = goalDao.getAllGoals()
     val latestTransaction: Flow<TransactionEntity?> = transactionDao.getLatestTransaction()
 
-    fun getTotalIncome(startTime: Long) = transactionDao.getTotalIncome(startTime)
-    fun getTotalExpenses(startTime: Long) = transactionDao.getTotalExpenses(startTime)
+    fun getTotalIncome(startTime: Long): Flow<java.math.BigDecimal?> = transactionDao.getTotalIncome(startTime)
+    fun getTotalExpenses(startTime: Long): Flow<java.math.BigDecimal?> = transactionDao.getTotalExpenses(startTime)
 
     suspend fun insertTransaction(transaction: TransactionEntity) {
         transactionDao.insertTransaction(transaction)

@@ -15,10 +15,10 @@ interface TransactionDao {
     suspend fun insertTransaction(transaction: TransactionEntity)
 
     @Query("SELECT SUM(amount) FROM transactions WHERE type IN ('received', 'deposit') AND timestamp >= :startTime")
-    fun getTotalIncome(startTime: Long): Flow<Double?>
+    fun getTotalIncome(startTime: Long): Flow<java.math.BigDecimal?>
 
     @Query("SELECT SUM(amount) FROM transactions WHERE type IN ('sent', 'payment', 'withdrawal') AND timestamp >= :startTime")
-    fun getTotalExpenses(startTime: Long): Flow<Double?>
+    fun getTotalExpenses(startTime: Long): Flow<java.math.BigDecimal?>
 
     @Query("SELECT * FROM transactions ORDER BY timestamp DESC LIMIT 1")
     fun getLatestTransaction(): Flow<TransactionEntity?>
@@ -34,6 +34,7 @@ interface GoalDao {
 }
 
 @Database(entities = [TransactionEntity::class, GoalEntity::class, CategoryEntity::class], version = 1, exportSchema = false)
+@TypeConverters(Converters::class)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun transactionDao(): TransactionDao
     abstract fun goalDao(): GoalDao

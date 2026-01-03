@@ -28,11 +28,14 @@ object NotificationHelper {
         notificationManager.notify(System.currentTimeMillis().toInt(), notification)
     }
 
-    fun checkAlerts(context: Context, balance: Double, amount: Double) {
-        if (balance < 1000) {
+    fun checkAlerts(context: Context, balance: java.math.BigDecimal, amount: java.math.BigDecimal) {
+        val ksh1000 = java.math.BigDecimal("1000")
+        val ksh10000 = java.math.BigDecimal("10000")
+        
+        if (balance < ksh1000) {
             showNotification(context, "Low Balance Alert", "Your M-Pesa balance is below KES 1,000.")
         }
-        if (amount > 10000) {
+        if (amount > ksh10000) {
             showNotification(context, "Large Transaction Detected", "A transaction of KES $amount was just recorded.")
         }
     }

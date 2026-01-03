@@ -3,55 +3,62 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginBottom="8dp"
-    app:cardCornerRadius="12dp"
-    app:cardElevation="1dp">
+    android:layout_marginVertical="4dp"
+    app:cardElevation="0dp"
+    app:cardBackgroundColor="@android:color/transparent">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:background="@drawable/bg_glass_card"
+        android:gravity="center_vertical"
         android:orientation="horizontal"
-        android:padding="16dp"
-        android:gravity="center_vertical">
+        android:padding="16dp">
 
         <ImageView
-            android:id="@+id/iv_type"
+            android:id="@+id/iv_category_icon"
             android:layout_width="40dp"
             android:layout_height="40dp"
-            android:src="@android:drawable/ic_menu_send"
-            app:tint="@color/primary" />
+            android:background="@drawable/ic_pulse"
+            android:backgroundTint="@color/neon_blue"
+            android:padding="8dp" />
 
         <LinearLayout
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
             android:layout_marginStart="16dp"
+            android:layout_weight="1"
             android:orientation="vertical">
 
             <TextView
                 android:id="@+id/tv_counterparty"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="John Doe"
-                android:textStyle="bold"
-                android:textSize="16sp" />
+                android:ellipsize="end"
+                android:maxLines="1"
+                android:text="Counterparty"
+                android:textColor="@color/white"
+                android:textSize="16sp"
+                android:textStyle="bold" />
 
             <TextView
-                android:id="@+id/tv_date"
+                android:id="@+id/tv_category_date"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="01 Jan 2026"
-                android:textSize="12sp"
-                android:alpha="0.6" />
+                android:alpha="0.6"
+                android:text="Category • Date"
+                android:textColor="@color/white"
+                android:textSize="12sp" />
         </LinearLayout>
 
         <TextView
             android:id="@+id/tv_amount"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="+ KES 100.00"
-            android:textStyle="bold"
-            android:textSize="16sp" />
+            android:text="KES 0.00"
+            android:textColor="@color/white"
+            android:textSize="16sp"
+            android:textStyle="bold" />
 
     </LinearLayout>
 </com.google.android.material.card.MaterialCardView>

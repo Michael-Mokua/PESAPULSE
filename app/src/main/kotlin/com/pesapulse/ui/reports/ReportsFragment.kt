@@ -33,40 +33,62 @@ class ReportsFragment : Fragment() {
         
         viewModel.allTransactions.observe(viewLifecycleOwner) { transactions ->
             setupBarChart(transactions)
-            setupLineChart(transactions)
+            setupTrendChart(transactions)
         }
     }
 
     private fun setupBarChart(transactions: List<com.pesapulse.data.model.TransactionEntity>) {
-        val income = transactions.filter { it.type in listOf("received", "deposit") }.sumOf { it.amount }.toFloat()
-        val expense = transactions.filter { it.type in listOf("sent", "payment", "withdrawal") }.sumOf { it.amount }.toFloat()
+        val income = transactions.filter { it.type in listOf("received", "deposit") }
+            .map { it.amount }.fold(java.math.BigDecimal.ZERO) { acc, amt -> acc.add(amt) }.toFloat()
+        val expense = transactions.filter { it.type in listOf("sent", "payment", "withdrawal") }
+            .map { it.amount }.fold(java.math.BigDecimal.ZERO) { acc, amt -> acc.add(amt) }.toFloat()
 
         val entries = listOf(
-            BarEntry(0f, income),
-            BarEntry(1f, expense)
+            BarEntry(1f, income ?: 0.0f),
+            BarEntry(2f, expense ?: 0.0f)
         )
-        val dataSet = BarDataSet(entries, "Income vs Expense")
-        dataSet.colors = listOf(Color.GREEN, Color.RED)
-        
-        binding.incomeExpenseChart.data = BarData(dataSet)
-        binding.incomeExpenseChart.description.isEnabled = false
-        binding.incomeExpenseChart.invalidate()
+
+        val dataSet = BarDataSet(entries, "Income vs Expense").apply {
+            colors = listOf(Color.parseColor("#00FF88"), Color.parseColor("#FF3D00"))
+            valueTextColor = Color.WHITE
+        }
+
+        binding.incomeExpenseChart.apply {
+            data = BarData(dataSet)
+            description.isEnabled = false
+            xAxis.textColor = Color.WHITE
+            axisLeft.textColor = Color.WHITE
+            axisRight.isEnabled = false
+            animateY(1000)
+            invalidate()
+        }
     }
 
-    private fun setupLineChart(transactions: List<com.pesapulse.data.model.TransactionEntity>) {
-        if (transactions.isEmpty()) return
-        
-        val entries = transactions.asReversed().mapIndexed { index, tx ->
-            Entry(index.toFloat(), tx.balance.toFloat())
+    private fun setupTrendChart(transactions: List<com.pesapulse.data.model.TransactionEntity>) {
+        // Trend chart logic with neon colors
+        val entries = transactions.reversed().take(10).mapIndexed { index, tx -> 
+            Entry(index.toFloat(), tx.balance.toFloat()) 
         }
-        val dataSet = LineDataSet(entries, "Balance Trend")
-        dataSet.color = Color.BLUE
-        dataSet.setDrawCircles(false)
-        dataSet.lineWidth = 2f
 
-        binding.balanceTrendChart.data = LineData(dataSet)
-        binding.balanceTrendChart.description.isEnabled = false
-        binding.balanceTrendChart.invalidate()
+        val dataSet = LineDataSet(entries, "Balance Trend").apply {
+            color = Color.parseColor("#00E5FF")
+            setDrawCircles(true)
+            setCircleColor(Color.WHITE)
+            lineWidth = 2f
+            setDrawFilled(true)
+            fillColor = Color.parseColor("#00E5FF")
+            fillAlpha = 30
+        }
+
+        binding.balanceTrendChart.apply {
+            data = LineData(dataSet)
+            description.isEnabled = false
+            xAxis.textColor = Color.WHITE
+            axisLeft.textColor = Color.WHITE
+            axisRight.isEnabled = false
+            animateX(1000)
+            invalidate()
+        }
     }
 
     override fun onDestroyView() {

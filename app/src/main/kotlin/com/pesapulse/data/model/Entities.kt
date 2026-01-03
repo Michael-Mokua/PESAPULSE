@@ -2,17 +2,19 @@ package com.pesapulse.data.model
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import java.math.BigDecimal
 
 @Entity(tableName = "transactions")
 data class TransactionEntity(
-    @PrimaryKey(autoGenerate = true) val id: Long = 0,
-    val code: String,
-    val amount: Double,
+    @PrimaryKey val code: String,
+    val amount: BigDecimal,
     val type: String, // deposit, withdrawal, payment, sent, received
     val category: String,
     val counterparty: String,
     val timestamp: Long,
-    val balance: Double,
+    val balance: BigDecimal,
+    val fulizaLimit: BigDecimal = BigDecimal.ZERO,
+    val fulizaBalance: BigDecimal = BigDecimal.ZERO,
     val rawMessage: String
 )
 
@@ -20,8 +22,8 @@ data class TransactionEntity(
 data class GoalEntity(
     @PrimaryKey(autoGenerate = true) val id: Long = 0,
     val name: String,
-    val targetAmount: Double,
-    val currentAmount: Double,
+    val targetAmount: BigDecimal,
+    val currentAmount: BigDecimal,
     val deadline: Long?
 )
 

@@ -45,12 +45,13 @@ class SettingsFragment : Fragment() {
 
     private fun saveGoal() {
         val name = binding.etGoalName.text.toString()
-        val amount = binding.etGoalAmount.text.toString().toDoubleOrNull() ?: 0.0
+        val amountStr = binding.etGoalAmount.text.toString()
+        val amount = try { java.math.BigDecimal(amountStr) } catch (e: Exception) { java.math.BigDecimal.ZERO }
 
-        if (name.isNotEmpty() && amount > 0) {
+        if (name.isNotEmpty() && amount > java.math.BigDecimal.ZERO) {
             val database = AppDatabase.getDatabase(requireContext())
             CoroutineScope(Dispatchers.IO).launch {
-                database.goalDao().insertGoal(GoalEntity(name = name, targetAmount = amount, currentAmount = 0.0, deadline = null))
+                database.goalDao().insertGoal(GoalEntity(name = name, targetAmount = amount, currentAmount = java.math.BigDecimal.ZERO, deadline = null))
             }
             Toast.makeText(context, "Goal saved!", Toast.LENGTH_SHORT).show()
         }

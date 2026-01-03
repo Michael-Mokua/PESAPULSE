@@ -17,8 +17,8 @@ class TransactionViewModel(private val repository: AppRepository) : ViewModel() 
         set(Calendar.MINUTE, 0)
     }.timeInMillis
 
-    val monthlyIncome: LiveData<Double?> = repository.getTotalIncome(startTime).asLiveData()
-    val monthlyExpenses: LiveData<Double?> = repository.getTotalExpenses(startTime).asLiveData()
+    val monthlyIncome: LiveData<java.math.BigDecimal?> = repository.getTotalIncome(startTime).asLiveData()
+    val monthlyExpenses: LiveData<java.math.BigDecimal?> = repository.getTotalExpenses(startTime).asLiveData()
 
     fun insertTransaction(transaction: TransactionEntity) = viewModelScope.launch {
         repository.insertTransaction(transaction)

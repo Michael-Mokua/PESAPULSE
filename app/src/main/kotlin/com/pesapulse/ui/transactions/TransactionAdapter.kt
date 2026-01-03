@@ -15,15 +15,17 @@ class TransactionAdapter : ListAdapter<TransactionEntity, TransactionAdapter.Vie
     class ViewHolder(private val binding: ItemTransactionBinding) : RecyclerView.ViewHolder(binding.root) {
         fun bind(transaction: TransactionEntity) {
             binding.tvCounterparty.text = transaction.counterparty
-            binding.tvDate.text = SimpleDateFormat("dd MMM, hh:mm a", Locale.getDefault()).format(Date(transaction.timestamp))
             
+            val df = java.text.DecimalFormat("#,##0.00")
+            val dateFormat = SimpleDateFormat("dd MMM, hh:mm a", Locale.getDefault())
             val isIncome = transaction.type in listOf("received", "deposit")
             val prefix = if (isIncome) "+" else "-"
-            binding.tvAmount.text = "$prefix KES ${String.format("%.2f", transaction.amount)}"
-            binding.tvAmount.setTextColor(
-                if (isIncome) binding.root.context.getColor(android.R.color.holo_green_dark)
-                else binding.root.context.getColor(android.R.color.holo_red_dark)
-            )
+            
+            binding.tvAmount.text = "$prefix KES ${df.format(transaction.amount)}"
+            binding.tvAmount.setTextColor(if (isIncome) 
+                android.graphics.Color.parseColor("#00FF88") else android.graphics.Color.parseColor("#FF3D00"))
+            
+            binding.tvCategoryDate.text = "${transaction.category} • ${dateFormat.format(Date(transaction.timestamp))}"
         }
     }
 
@@ -36,7 +38,7 @@ class TransactionAdapter : ListAdapter<TransactionEntity, TransactionAdapter.Vie
     }
 
     object DiffCallback : DiffUtil.ItemCallback<TransactionEntity>() {
-        override fun areItemsTheSame(oldItem: TransactionEntity, newItem: TransactionEntity) = oldItem.id == newItem.id
+        override fun areItemsTheSame(oldItem: TransactionEntity, newItem: TransactionEntity) = oldItem.code == newItem.code
         override fun areContentsTheSame(oldItem: TransactionEntity, newItem: TransactionEntity) = oldItem == newItem
     }
 }

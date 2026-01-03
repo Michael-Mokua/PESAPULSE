@@ -27,7 +27,7 @@ class OnboardingFragment : Fragment() {
             findNavController().navigate(R.id.action_onboarding_to_dashboard)
         }
 
-        binding.btnStart.setOnClickListener {
+        binding.btnGetStarted.setOnClickListener {
             prefs.edit().putBoolean("onboarding_complete", true).apply()
             findNavController().navigate(R.id.action_onboarding_to_dashboard)
         }
